@@ -23,7 +23,9 @@ export default defineComponent({
     const selectedId = ref<Id>();
 
     const pageConfig = computed(
-      () => root.value?.items?.find((item: MNode) => item.id === curPageId.value) || root.value?.items?.[0],
+      () =>
+        root.value?.items?.find((item: MNode) => item.id === curPageId.value) ||
+        root.value?.items?.[0]
     );
 
     const app = new Core({

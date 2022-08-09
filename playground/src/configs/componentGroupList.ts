@@ -1,4 +1,4 @@
-import { FolderOpened, Grid, PictureFilled, SwitchButton, Tickets } from '@element-plus/icons-vue';
+import { FolderOpened, Grid, PictureFilled, SwitchButton, Tickets, MapLocation} from '@element-plus/icons-vue';
 
 export default [
   {
@@ -38,7 +38,7 @@ export default [
         icon: Grid,
         text: '二维码',
         type: 'qrcode',
-      },
+      }
     ],
   },
   {
@@ -77,6 +77,16 @@ export default [
             },
           ],
         },
+      },
+    ],
+  },
+  {
+    title: 'GIS 组件',
+    items: [
+      {
+        icon: MapLocation,
+        text: 'GIS',
+        type: 'gis',
       },
     ],
   },
