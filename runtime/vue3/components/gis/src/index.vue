@@ -2,7 +2,7 @@
   <ol-map
     :loadTilesWhileAnimating="true"
     :loadTilesWhileInteracting="true"
-    style="height: 400px"
+    style="height: 400px; width: 100%"
   >
     <ol-view
       ref="view"
@@ -35,7 +35,7 @@ export default defineComponent({
   },
 
   setup() {
-    const center = ref([40, 40]);
+    const center = ref([120, 30]);
     const projection = ref('EPSG:4326');
     const zoom = ref(8);
     const rotation = ref(0);
