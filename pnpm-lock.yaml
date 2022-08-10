@@ -1731,7 +1731,7 @@ packages:
       regenerator-runtime: 0.13.9
       systemjs: 6.12.1
       terser: 5.14.2
-      vite: 3.0.4_sass@1.52.2+terser@5.14.2
+      vite: 3.0.4_terser@5.14.2
 
   /@vitejs/plugin-react-refresh/1.3.6:
     resolution: {integrity: sha512-iNR/UqhUOmFFxiezt0em9CgmiJBdWR+5jGxB2FihaoJfqGt76kiwaKoVOJVU5NYcDWMdN06LbyN2VIGIoYdsEA==}
@@ -1767,7 +1767,7 @@ packages:
       vite: ^3.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 3.0.4_sass@1.52.2+terser@5.14.2
+      vite: 3.0.4
       vue: 3.2.37
     dev: true
 
@@ -4370,6 +4370,7 @@ packages:
 
   /immutable/4.1.0:
     resolution: {integrity: sha512-oNkuqVTA8jqG1Q6c+UglTOD1xhC1BtjKI7XkCXRkZHrN5m18/XsnUp8Q89GkQO/z+0WjonSvl0FLhDYftp46nQ==}
+    dev: true
 
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
@@ -6048,6 +6049,7 @@ packages:
       chokidar: 3.5.3
       immutable: 4.1.0
       source-map-js: 1.0.2
+    dev: true
 
   /saxes/5.0.1:
     resolution: {integrity: sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==}
@@ -6842,6 +6844,7 @@ packages:
       terser: 5.14.2
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /vite/3.0.4_terser@5.14.2:
     resolution: {integrity: sha512-NU304nqnBeOx2MkQnskBQxVsa0pRAH5FphokTGmyy8M3oxbvw7qAXts2GORxs+h/2vKsD+osMhZ7An6yK6F1dA==}
@@ -6869,7 +6872,6 @@ packages:
       terser: 5.14.2
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
 
   /vitest/0.14.1_c8@7.11.3+jsdom@19.0.0:
     resolution: {integrity: sha512-2UUm6jYgkwh7Y3VKSRR8OuaNCm+iA5LPDnal7jyITN39maZK9L+JVxqjtQ39PSFo5Fl3/BgaJvER6GGHX9JLxg==}

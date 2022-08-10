@@ -19,7 +19,13 @@
       </template>
     </m-editor>
 
-    <el-dialog v-model="previewVisible" destroy-on-close :width="375" custom-class="pre-viewer" title="预览">
+    <el-dialog
+      v-model="previewVisible"
+      destroy-on-close
+      :width="375"
+      custom-class="pre-viewer"
+      title="预览"
+    >
       <iframe v-if="previewVisible" width="100%" height="817" :src="previewUrl"></iframe>
     </el-dialog>
   </div>
@@ -56,7 +62,10 @@ const eventMethodList = ref<Record<string, any>>({});
 const stageRect = ref();
 
 const previewUrl = computed(
-  () => `${VITE_RUNTIME_PATH}/page/index.html?localPreview=1&page=${editor.value?.editorService.get('page').id}`,
+  () =>
+    `${VITE_RUNTIME_PATH}/page/index.html?localPreview=1&page=${
+      editor.value?.editorService.get('page').id
+    }`
 );
 
 const menu: MenuBarData = {
@@ -114,7 +123,8 @@ const menu: MenuBarData = {
       type: 'button',
       icon: Document,
       tooltip: '源码',
-      handler: (service) => service?.uiService.set('showSrc', !service?.uiService.get('showSrc')),
+      handler: (service) =>
+        service?.uiService.set('showSrc', !service?.uiService.get('showSrc')),
     },
   ],
 };
@@ -144,7 +154,7 @@ const save = () => {
     serialize(toRaw(value.value), {
       space: 2,
       unsafe: true,
-    }).replace(/"(\w+)":\s/g, '$1: '),
+    }).replace(/"(\w+)":\s/g, '$1: ')
   );
   editor.value?.editorService.resetModifiedNodeId();
 };
