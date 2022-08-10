@@ -5,7 +5,6 @@ import Overlay from './overlay';
 import Page from './page';
 import Qrcode from './qrcode';
 import Text from './text';
-import Gis from './gis';
 
 const ui: Record<string, any> = {
   page: Page,
@@ -15,7 +14,6 @@ const ui: Record<string, any> = {
   img: Img,
   qrcode: Qrcode,
   overlay: Overlay,
-  gis: Gis,
 };
 
 export default ui;
