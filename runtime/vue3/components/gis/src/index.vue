@@ -1,9 +1,10 @@
 <template>
   <ol-map
+    v-if="visible"
     :loadTilesWhileAnimating="true"
     :loadTilesWhileInteracting="true"
     style="height: 400px; width: 100%"
-    @click="clickHandler"
+    @click="onClick"
   >
     <ol-view
       ref="view"
@@ -18,8 +19,8 @@
   </ol-map>
 </template>
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import useApp from '../../useApp';
+import { defineComponent, ref, inject } from 'vue';
+import Core from '@tmagic/core';
 
 export default defineComponent({
   name: 'magic-ui-gis',
@@ -35,21 +36,27 @@ export default defineComponent({
     },
   },
 
-  setup(props) {
-    useApp(props);
-
+  setup() {
+    const visible = ref(true);
     const center = ref([120, 30]);
     const projection = ref('EPSG:4326');
     const zoom = ref(8);
     const rotation = ref(0);
+    const app: Core | undefined = inject('app');
+
     return {
+      visible,
       center,
       projection,
       zoom,
       rotation,
 
-      clickHandler() {
-        console.log(1);
+      log() {
+        console.log('log');
+      },
+
+      onClick() {
+        app?.emit('map:click');
       },
     };
   },
