@@ -10,7 +10,12 @@ module.exports = {
     expect: true,
     beforeEach: true,
   },
-  extends: ['eslint:recommended', 'plugin:vue/vue3-essential', 'prettier'],
+  extends: [
+    'eslint-config-tencent',
+    'eslint-config-tencent/ts',
+    'plugin:vue/vue3-essential',
+    'eslint-config-tencent/prettier',
+  ],
   parser: 'vue-eslint-parser',
   parserOptions: {
     ecmaVersion: 12,
@@ -18,10 +23,9 @@ module.exports = {
     extraFileExtensions: ['.vue'],
     sourceType: 'module',
   },
-  plugins: ['vue', '@typescript-eslint', 'simple-import-sort', 'prettier'],
+  plugins: ['vue', '@typescript-eslint', 'simple-import-sort'],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
-    'prettier/prettier': 'error',
     'vue/no-mutating-props': 'off',
     'no-param-reassign': 'off',
     '@typescript-eslint/no-require-imports': 'off',

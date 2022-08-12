@@ -6,25 +6,19 @@
     style="height: 400px; width: 100%"
     @click="onClick"
   >
-    <ol-view
-      ref="view"
-      :center="center"
-      :rotation="rotation"
-      :zoom="zoom"
-      :projection="projection"
-    />
+    <ol-view ref="view" :center="center" :rotation="rotation" :zoom="zoom" :projection="projection" />
     <ol-tile-layer>
       <ol-source-osm />
     </ol-tile-layer>
   </ol-map>
 </template>
 <script lang="ts">
-import { defineComponent, inject, ref } from "vue";
+import { defineComponent, inject, ref } from 'vue';
 
-import Core from "@tmagic/core";
+import Core from '@tmagic/core';
 
 export default defineComponent({
-  name: "magic-ui-gis",
+  name: 'magic-ui-gis',
   props: {
     config: {
       type: Object,
@@ -40,10 +34,10 @@ export default defineComponent({
   setup() {
     const visible = ref(true);
     const center = ref([120, 30]);
-    const projection = ref("EPSG:4326");
+    const projection = ref('EPSG:4326');
     const zoom = ref(8);
     const rotation = ref(0);
-    const app: Core | undefined = inject("app");
+    const app: Core | undefined = inject('app');
 
     return {
       visible,
@@ -53,11 +47,11 @@ export default defineComponent({
       rotation,
 
       log() {
-        console.log("log");
+        console.log('log');
       },
 
       onClick() {
-        app?.emit("map:click");
+        app?.emit('map:click');
       },
     };
   },
