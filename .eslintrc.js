@@ -10,12 +10,7 @@ module.exports = {
     expect: true,
     beforeEach: true,
   },
-  extends: [
-    'eslint-config-tencent',
-    'eslint-config-tencent/ts',
-    'plugin:vue/vue3-essential',
-    'eslint-config-tencent/prettier',
-  ],
+  extends: ['eslint-config-tencent', 'eslint-config-tencent/ts', 'plugin:vue/vue3-essential', 'prettier'],
   parser: 'vue-eslint-parser',
   parserOptions: {
     ecmaVersion: 12,

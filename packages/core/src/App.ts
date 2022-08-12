@@ -26,7 +26,7 @@ import {
   DEFAULT_EVENTS,
   getCommonEventName,
   isCommonMethod,
-  triggerCommonMethod,
+  triggerCommonMethod
 } from './events';
 import Page from './Page';
 import { fillBackgroundImage, style2Obj } from './utils';
@@ -128,7 +128,11 @@ class App extends EventEmitter {
             return `${transformKey}(${transformValue || defaultValue})`;
           })
           .join(' ');
-      } else if (!whiteList.includes(key) && value && /^[-]?[0-9]*[.]?[0-9]*$/.test(value)) {
+      } else if (
+        !whiteList.includes(key) &&
+        value &&
+        /^[-]?[0-9]*[.]?[0-9]*$/.test(value)
+      ) {
         results[key] = `${value / 100}rem`;
       } else {
         results[key] = value;
@@ -151,8 +155,8 @@ class App extends EventEmitter {
         page.id,
         new Page({
           config: page,
-          app: this,
-        }),
+          app: this
+        })
       );
     });
 
@@ -195,13 +199,19 @@ class App extends EventEmitter {
     this.removeAllListeners();
 
     for (const [, value] of this.page.nodes) {
-      value.events?.forEach((event) => this.bindEvent(event, `${value.data.id}`));
+      value.events?.forEach((event) =>
+        this.bindEvent(event, `${value.data.id}`)
+      );
     }
   }
 
   public bindEvent(event: EventItemConfig, id: string) {
     let { name: eventName } = event;
-    if (DEFAULT_EVENTS.findIndex((defaultEvent) => defaultEvent.value === eventName) > -1) {
+    if (
+      DEFAULT_EVENTS.findIndex(
+        (defaultEvent) => defaultEvent.value === eventName
+      ) > -1
+    ) {
       // common 事件名通过 node id 避免重复触发
       eventName = getCommonEventName(eventName, id);
     }
@@ -231,7 +241,7 @@ class App extends EventEmitter {
       this.addEventToMap({
         eventConfig,
         fromCpt,
-        args,
+        args
       });
     }
   }

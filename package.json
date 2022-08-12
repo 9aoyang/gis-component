@@ -61,6 +61,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-vue": "^7.11.1",
+    "eslint-config-prettier": "^8.5.0",
     "execa": "^4.0.2",
     "husky": "^7.0.0",
     "jsdom": "^19.0.0",

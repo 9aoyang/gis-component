@@ -1,9 +1,7 @@
 export default {
   style: {
-    position: 'fixed',
-    backgroundColor: '#fff',
-    width: '250px',
-    height: '250px',
+    border: '1px solid blue',
+    padding: '4px 8px'
   },
-  items: [],
+  items: []
 };

@@ -1,14 +1,14 @@
 export default {
   events: [
     {
-      label: '点击地图',
-      value: 'map:click',
+      label: '点击按钮',
+      value: 'button:click',
     },
   ],
   methods: [
     {
-      label: 'log',
+      label: '打印',
       value: 'log',
-    }
+    },
   ],
 };

@@ -18,7 +18,12 @@
 
 import { EventEmitter } from 'events';
 
-import type { EventItemConfig, MComponent, MContainer, MPage } from '@tmagic/schema';
+import type {
+  EventItemConfig,
+  MComponent,
+  MContainer,
+  MPage
+} from '@tmagic/schema';
 
 import type App from './App';
 import type Page from './Page';
@@ -78,8 +83,16 @@ class Node extends EventEmitter {
 
       const eventConfigQueue = this.app.eventQueueMap[instance.config.id] || [];
 
-      for (let eventConfig = eventConfigQueue.shift(); eventConfig; eventConfig = eventConfigQueue.shift()) {
-        this.app.eventHandler(eventConfig.eventConfig, eventConfig.fromCpt, eventConfig.args);
+      for (
+        let eventConfig = eventConfigQueue.shift();
+        eventConfig;
+        eventConfig = eventConfigQueue.shift()
+      ) {
+        this.app.eventHandler(
+          eventConfig.eventConfig,
+          eventConfig.fromCpt,
+          eventConfig.args
+        );
       }
 
       if (typeof this.data.mounted === 'function') {

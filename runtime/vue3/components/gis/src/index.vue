@@ -19,12 +19,14 @@
   </ol-map>
 </template>
 <script lang="ts">
-import { defineComponent, inject, ref } from "vue";
+import { defineComponent, ref } from 'vue';
 
-import Core from "@tmagic/core";
+import Core from '@tmagic/core';
+
+import useApp from '../../useApp';
 
 export default defineComponent({
-  name: "magic-ui-gis",
+  name: 'magic-ui-gis',
   props: {
     config: {
       type: Object,
@@ -37,13 +39,13 @@ export default defineComponent({
     },
   },
 
-  setup() {
+  setup(props) {
     const visible = ref(true);
     const center = ref([120, 30]);
-    const projection = ref("EPSG:4326");
+    const projection = ref('EPSG:4326');
     const zoom = ref(8);
     const rotation = ref(0);
-    const app: Core | undefined = inject("app");
+    const app: Core | undefined = useApp(props);
 
     return {
       visible,
@@ -53,11 +55,12 @@ export default defineComponent({
       rotation,
 
       log() {
-        console.log("log");
+        console.log('map');
       },
 
       onClick() {
-        app?.emit("map:click");
+        console.log('map:click');
+        app?.emit('map:click');
       },
     };
   },

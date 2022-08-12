@@ -7,8 +7,8 @@ export default {
   ],
   methods: [
     {
-      label: 'log',
+      label: '打印',
       value: 'log',
-    }
+    },
   ],
 };
