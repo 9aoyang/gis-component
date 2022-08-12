@@ -1,3 +1,21 @@
+/*
+ * Tencent is pleased to support the open source community by making TMagicEditor available.
+ *
+ * Copyright (C) 2021 THL A29 Limited, a Tencent company.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { reactive, toRaw } from 'vue';
 import { cloneDeep, mergeWith, uniq } from 'lodash-es';
 
@@ -14,14 +32,16 @@ import {
   change2Fixed,
   COPY_STORAGE_KEY,
   Fixed2Other,
+  fixNodePosition,
   getInitPositionStyle,
   getNodeIndex,
   isFixed,
   setLayout,
 } from '../utils/editor';
-import { beforeAdd, beforePaste, beforeRemove, notifyAddToStage } from '../utils/operator';
+import { beforePaste, getAddParent } from '../utils/operator';
 
 import BaseService from './BaseService';
+import propsService from './props';
 
 class Editor extends BaseService {
   public state: StoreState = reactive({
@@ -42,6 +62,7 @@ class Editor extends BaseService {
       [
         'getLayout',
         'select',
+        'doAdd',
         'add',
         'remove',
         'update',
@@ -263,34 +284,30 @@ class Editor extends BaseService {
     this.set('nodes', nodes);
   }
 
-  /**
-   * 批量向容器添加节点
-   * @param configs 将要添加的节点数组
-   * @returns 添加后的节点
-   */
-  public async multiAdd(configs: MNode[]): Promise<MNode[]> {
+  public async doAdd(node: MNode, parent: MContainer): Promise<MNode> {
+    const root = this.get<MApp>('root');
+    const curNode = this.get<MNode>('node');
     const stage = this.get<StageCore | null>('stage');
-    const newNodes: MNode[] = await Promise.all(
-      configs.map(async (configItem: MNode): Promise<MNode> => {
-        // 新增元素到配置
-        const { parentNode, newNode, layout } = await beforeAdd(configItem as AddMNode);
-        // 将新增元素事件通知到stage以更新渲染
-        await notifyAddToStage(parentNode, newNode, layout);
-        return newNode;
-      }),
-    );
-    const newNodeIds: Id[] = newNodes.map((node) => node.id);
 
-    // 增加历史记录 多选不可能选中page
-    this.addModifiedNodeId(newNodeIds.join('-'));
-    this.pushHistoryState();
+    if ((parent?.type === NodeType.ROOT || curNode.type === NodeType.ROOT) && node.type !== NodeType.PAGE) {
+      throw new Error('app下不能添加组件');
+    }
 
-    // 触发选中样式
-    stage?.multiSelect(newNodeIds);
+    const layout = await this.getLayout(toRaw(parent), node as MNode);
+    node.style = getInitPositionStyle(node.style, layout);
 
-    this.emit('multiAdd', newNodes);
+    await stage?.add({ config: cloneDeep(node), parent: cloneDeep(parent), root: cloneDeep(root) });
 
-    return newNodes;
+    node.style = fixNodePosition(node, parent, stage);
+
+    await stage?.update({ config: cloneDeep(node), root: cloneDeep(root) });
+
+    // 新增节点添加到配置中
+    parent?.items?.push(node);
+
+    this.addModifiedNodeId(node.id);
+
+    return node;
   }
 
   /**
@@ -299,30 +316,89 @@ class Editor extends BaseService {
    * @param parent 要添加到的容器组件节点配置，如果不设置，默认为当前选中的组件的父节点
    * @returns 添加后的节点
    */
-  public async add(addNode: AddMNode, parent?: MContainer | null): Promise<MNode> {
+  public async add(addNode: AddMNode | MNode[], parent?: MContainer | null): Promise<MNode | MNode[]> {
     const stage = this.get<StageCore | null>('stage');
-    // 新增元素到配置
-    const { parentNode, newNode, layout, isPage } = await beforeAdd(addNode, parent);
-    // 将新增元素事件通知到stage以更新渲染
-    await notifyAddToStage(parentNode, newNode, layout);
-    // 更新编辑器选中元素
-    await this.select(newNode);
-    // 增加历史记录
-    this.addModifiedNodeId(newNode.id);
-    if (!isPage) {
-      this.pushHistoryState();
-    }
 
-    if (isPage) {
-      this.state.pageLength += 1;
+    const parentNode = parent && typeof parent !== 'function' ? parent : getAddParent(addNode);
+    if (!parentNode) throw new Error('未找到父元素');
+
+    // 新增多个组件只存在于粘贴多个组件,粘贴的是一个完整的config,所以不再需要getPropsValue
+    const addNodes = [];
+    if (!Array.isArray(addNode)) {
+      const { type, inputEvent, ...config } = addNode;
+
+      if (!type) throw new Error('组件类型不能为空');
+
+      addNodes.push({ ...toRaw(await propsService.getPropsValue(type, config)) });
     } else {
-      // 新增页面，这个时候页面还有渲染出来，此时select会出错，在runtime-ready的时候回去select
-      stage?.select(newNode.id);
+      addNodes.push(...addNode);
     }
 
-    this.emit('add', newNode);
+    const newNodes = await Promise.all(addNodes.map((node) => this.doAdd(node, parentNode)));
 
-    return newNode;
+    if (newNodes.length > 1) {
+      const newNodeIds = newNodes.map((node) => node.id);
+      // 触发选中样式
+      stage?.multiSelect(newNodeIds);
+      await this.multiSelect(newNodeIds);
+    } else {
+      await this.select(newNodes[0]);
+
+      if (isPage(newNodes[0])) {
+        this.state.pageLength += 1;
+      } else {
+        // 新增页面，这个时候页面还有渲染出来，此时select会出错，在runtime-ready的时候回去select
+        stage?.select(newNodes[0].id);
+      }
+    }
+
+    this.pushHistoryState();
+
+    this.emit('add', newNodes);
+
+    return newNodes.length > 1 ? newNodes[0] : newNodes;
+  }
+
+  public async doRemove(node: MNode): Promise<void> {
+    const root = this.get<MApp | null>('root');
+
+    if (!root) throw new Error('没有root');
+
+    const { parent, node: curNode } = this.getNodeInfo(node.id);
+
+    if (!parent || !curNode) throw new Error('找不要删除的节点');
+
+    const index = getNodeIndex(curNode, parent);
+
+    if (typeof index !== 'number' || index === -1) throw new Error('找不要删除的节点');
+
+    parent.items?.splice(index, 1);
+    const stage = this.get<StageCore | null>('stage');
+    stage?.remove({ id: node.id, root: this.get('root') });
+
+    if (node.type === NodeType.PAGE) {
+      this.state.pageLength -= 1;
+
+      if (root.items[0]) {
+        await this.select(root.items[0]);
+        stage?.select(root.items[0].id);
+      } else {
+        this.set('node', null);
+        this.set('parent', null);
+        this.set('page', null);
+        this.set('stage', null);
+        this.set('highlightNode', null);
+        this.resetModifiedNodeId();
+        historyService.reset();
+
+        return;
+      }
+    } else {
+      await this.select(parent);
+      stage?.select(parent.id);
+    }
+
+    this.addModifiedNodeId(parent.id);
   }
 
   /**
@@ -330,42 +406,15 @@ class Editor extends BaseService {
    * @param {Object} node
    * @return {Object} 删除的组件配置
    */
-  public async remove(nodeOrNodeList: MNode | MNode[]): Promise<MNode | MNode[]> {
-    if (Array.isArray(nodeOrNodeList)) {
-      // 多选批量删除
-      const nodes = nodeOrNodeList;
-      return this.multiRemove(nodes);
-    }
-    const node = nodeOrNodeList;
-    const removeParent = await beforeRemove(node);
-    // 删除的是页面
-    if (!removeParent) return node;
+  public async remove(nodeOrNodeList: MNode | MNode[]): Promise<void> {
+    const nodes = Array.isArray(nodeOrNodeList) ? nodeOrNodeList : [nodeOrNodeList];
+
+    await Promise.all(nodes.map((node) => this.doRemove(node)));
+
     // 更新历史记录
-    this.addModifiedNodeId(removeParent.id);
     this.pushHistoryState();
 
-    this.emit('remove', node);
-
-    return node;
-  }
-
-  /**
-   * 批量删除
-   * @param nodes 批量删除的节点
-   * @returns 批量删除的节点
-   */
-  public async multiRemove(nodes: MNode[]): Promise<MNode[]> {
-    await Promise.all(
-      nodes.map(async (removeNode) => {
-        await beforeRemove(removeNode);
-      }),
-    );
-    const nodeIds = nodes.map((node) => node.id);
-    this.addModifiedNodeId(nodeIds.join('-'));
-    this.pushHistoryState();
-
-    this.emit('multiRemove', nodes);
-    return nodes;
+    this.emit('remove');
   }
 
   /**
@@ -474,14 +523,14 @@ class Editor extends BaseService {
    * @param position 粘贴的坐标
    * @returns 添加后的组件节点配置
    */
-  public async paste(position: PastePosition = {}): Promise<MNode[] | void> {
-    const config = await storageService.getItem(COPY_STORAGE_KEY);
+  public async paste(position: PastePosition = {}): Promise<MNode | MNode[] | void> {
+    const config: MNode[] = await storageService.getItem(COPY_STORAGE_KEY);
 
-    if (!config) return;
+    if (!Array.isArray(config)) return;
 
     const pasteConfigs = await beforePaste(position, config);
 
-    return await this.multiAdd(pasteConfigs);
+    return this.add(pasteConfigs);
   }
 
   /**
@@ -489,15 +538,15 @@ class Editor extends BaseService {
    * @param config 组件节点配置
    * @returns 当前组件节点配置
    */
-  public async alignCenter(config: MNode): Promise<MNode | void> {
+  public async alignCenter(config: MNode): Promise<MNode> {
     const parent = this.get<MContainer>('parent');
-    const node = this.get<MNode>('node');
-    const layout = await this.getLayout(toRaw(parent), toRaw(node));
+    const node = cloneDeep(toRaw(config));
+    const layout = await this.getLayout(toRaw(parent), node);
     if (layout === Layout.RELATIVE) {
-      return;
+      return config;
     }
 
-    if (!node.style) return;
+    if (!node.style) return config;
 
     const stage = this.get<StageCore>('stage');
     const doc = stage?.renderer.contentWindow?.document;
@@ -512,15 +561,14 @@ class Editor extends BaseService {
       node.style.left = (parent.style.width - node.style.width) / 2;
     }
 
-    await this.update(node);
+    const newNode = await this.update(node);
+
     this.get<StageCore | null>('stage')?.update({
-      config: cloneDeep(toRaw(node)),
+      config: cloneDeep(toRaw(newNode)),
       root: cloneDeep(this.get<MApp>('root')),
     });
-    this.addModifiedNodeId(config.id);
-    this.pushHistoryState();
 
-    return config;
+    return newNode;
   }
 
   /**
@@ -572,7 +620,7 @@ class Editor extends BaseService {
           return srcValue;
         }
       });
-      newConfig.style = getInitPositionStyle(newConfig.style, layout, target, stage);
+      newConfig.style = getInitPositionStyle(newConfig.style, layout);
 
       target.items.push(newConfig);
 
@@ -615,7 +663,7 @@ class Editor extends BaseService {
     const node = toRaw(this.get('node'));
     if (!node || isPage(node)) return;
 
-    const { style, id } = node;
+    const { style, id, type } = node;
     if (!style || style.position !== 'absolute') return;
 
     if (top && !isNumber(style.top)) return;
@@ -623,6 +671,7 @@ class Editor extends BaseService {
 
     this.update({
       id,
+      type,
       style: {
         ...style,
         left: Number(style.left) + left,

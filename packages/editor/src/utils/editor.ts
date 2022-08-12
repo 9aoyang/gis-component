@@ -1,3 +1,21 @@
+/*
+ * Tencent is pleased to support the open source community by making TMagicEditor available.
+ *
+ * Copyright (C) 2021 THL A29 Limited, a Tencent company.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import type { MApp, MContainer, MNode, MPage } from '@tmagic/schema';
 import { NodeType } from '@tmagic/schema';
 import type StageCore from '@tmagic/stage';
@@ -70,10 +88,10 @@ export const getRelativeStyle = (style: Record<string, any> = {}): Record<string
   left: 0,
 });
 
-const getMiddleTop = (style: Record<string, any> = {}, parentNode: MNode, stage: StageCore) => {
-  let height = style.height || 0;
+const getMiddleTop = (node: MNode, parentNode: MNode, stage: StageCore | null) => {
+  let height = node.style?.height || 0;
 
-  if (!stage || typeof style.top !== 'undefined' || !parentNode.style) return style.top;
+  if (!stage || typeof node.style?.top !== 'undefined' || !parentNode.style) return node.style?.top;
 
   if (!isNumber(height)) {
     height = 0;
@@ -85,20 +103,15 @@ const getMiddleTop = (style: Record<string, any> = {}, parentNode: MNode, stage:
     const { scrollTop = 0, wrapperHeight } = stage.mask;
     return (wrapperHeight - height) / 2 + scrollTop;
   }
+
   return (parentHeight - height) / 2;
 };
 
-export const getInitPositionStyle = (
-  style: Record<string, any> = {},
-  layout: Layout,
-  parentNode: MNode,
-  stage: StageCore,
-) => {
+export const getInitPositionStyle = (style: Record<string, any> = {}, layout: Layout) => {
   if (layout === Layout.ABSOLUTE) {
     return {
       ...style,
       position: 'absolute',
-      top: getMiddleTop(style, parentNode, stage),
     };
   }
 
@@ -211,4 +224,16 @@ export const fixNodeLeft = (config: MNode, parent: MContainer, doc?: Document) =
   }
 
   return config.style.left;
+};
+
+export const fixNodePosition = (config: MNode, parent: MContainer, stage: StageCore | null) => {
+  if (config.style?.position !== 'absolute') {
+    return config.style;
+  }
+
+  return {
+    ...(config.style || {}),
+    top: getMiddleTop(config, parent, stage),
+    left: fixNodeLeft(config, parent, stage?.renderer.contentWindow?.document),
+  };
 };

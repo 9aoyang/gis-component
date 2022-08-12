@@ -6,8 +6,7 @@
     :class="`magic-ui-component${config.className ? ` ${config.className}` : ''}`"
     :style="style"
     :config="config"
-  >
-  </component>
+  ></component>
 </template>
 
 <script lang="ts">
