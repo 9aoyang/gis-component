@@ -54,8 +54,11 @@ export default defineComponent({
       zoom,
       rotation,
 
-      log() {
-        console.log('map');
+      refresh() {
+        visible.value = false
+        setTimeout(() => {
+          visible.value = true
+        }, 1000);
       },
 
       onClick() {
